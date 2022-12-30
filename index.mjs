@@ -56,9 +56,8 @@ function dateAfterRoshHashana(date) {
   });
   const roshHashana = hCal.find(e => e instanceof RoshHashanaEvent).date;
   /* Return true if date is Rosh Hashana or After Rosh Hashana, False if it is before Rosh Hashana */
-  return date >= roshHashana.greg();
+  return new Date(date.toDateString()) >= new Date(roshHashana.greg().toDateString());
 }
-console.log(dateAfterRoshHashana(new Date('2022-09-26')));
 function getMonthIndex(month) {
   if (month === 0) return 13;
   if (month === 1) return 14;
@@ -93,7 +92,7 @@ function getSHE1(gYear) {
 function getSHE2(gYear) {
   return getSHE1(gYear + 1);
 }
-function getModeValue(gYear, mode) {
+function getModeValue(gYear, mode,afterRoshHashanah = false) {
   switch (mode) {
     case 'IT':
       return getIT(gYear);
@@ -106,17 +105,28 @@ function getModeValue(gYear, mode) {
     case 'HE||SHE2':
       return Math.max(getHE(gYear), getSHE2(gYear));
     case 'IT||HE':
-      return Math.max(getIT(gYear), getHE(gYear));
+          {
+             return  afterRoshHashanah ? getHE(gYear) : getIT(gYear)
+          }
   }
 }
+function getModeValueFromDate(date) {
+    const gYear = date.getFullYear()
+    const mode = getMode(getMonthIndex(date.getMonth()))
+    const afterRoshHashana = dateAfterRoshHashana(date)
+    return getModeValue(gYear,mode,afterRoshHashana)
+    
+}
 function romanToHebrew(date) {
-  const height = date.getDate() + getMonthIndex(date.getMonth());
+const arr = [date.getDate()]
+  let height = arr.reduce(curr, acc => curr +acc, 0) + getMonthIndex(date.getMonth());
+let modeValue = getModeValueFromDate(date)
+
+    while ((height - modeValue) < 1){
+        
+        height = date.getDate() 
+    }
+    return 
 }
 let res = romanToHebrew(new Date('2022-12-27'));
-res = {
-  IT: getIT(2022),
-  HE: getHE(2022),
-  SHE1: getSHE1(2022),
-  SHE2: getSHE2(2022),
-};
 console.log(res);
